@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 '''This example uses a convolutional stack followed by a recurrent stack
 and a CTC logloss function to perform optical character recognition
 of generated text images. I have no evidence of whether it actually
@@ -43,7 +40,6 @@ import editdistance
 import numpy as np
 from scipy import ndimage
 import pylab
-import matplotlib.image as mpimg
 from keras import backend as K
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.layers import Input, Dense, Activation
@@ -77,6 +73,7 @@ def speckle(img):
 # paints the string in a random location the bounding box
 # also uses a random font, a slight random rotation,
 # and a random amount of speckle noise
+
 def paint_text(text, w, h, rotate=False, ud=False, multi_fonts=False):
     surface = cairo.ImageSurface(cairo.FORMAT_RGB24, w, h)
     with cairo.Context(surface) as context:
@@ -117,7 +114,7 @@ def paint_text(text, w, h, rotate=False, ud=False, multi_fonts=False):
     if rotate:
         a = image.random_rotation(a, 3 * (w - top_left_x) / w + 1)
     a = speckle(a)
-    mpimg.imsave("image_ocr/"+ text +".png",a[0])
+
     return a
 
 
@@ -145,7 +142,7 @@ def shuffle_mats_or_lists(matrix_list, stop_ind=None):
 
 def text_to_labels(text, num_classes):
     ret = []
-    for char in text.encode('utf8'):
+    for char in text:
         if char >= 'a' and char <= 'z':
             ret.append(ord(char) - ord('a'))
         elif char == ' ':
@@ -296,7 +293,7 @@ class TextImageGenerator(keras.callbacks.Callback):
             yield ret
 
     def on_train_begin(self, logs={}):
-        self.build_word_list(16000, 9, 1)
+        self.build_word_list(16000, 4, 1)
         self.paint_func = lambda text: paint_text(text, self.img_w, self.img_h,
                                                   rotate=False, ud=False, multi_fonts=False)
 
@@ -419,9 +416,9 @@ def train(run_name, start_epoch, stop_epoch, img_w):
 
     fdir = os.path.dirname(get_file('wordlists.tgz',
                                     origin='http://www.isosemi.com/datasets/wordlists.tgz', untar=True))
-    print "Dir is:" + fdir
-    img_gen = TextImageGenerator(monogram_file= 'image_ocr/@.words',
-                                 bigram_file= 'image_ocr/@.words',
+
+    img_gen = TextImageGenerator(monogram_file=os.path.join(fdir, 'wordlist_mono_clean.txt'),
+                                 bigram_file=os.path.join(fdir, 'wordlist_bi_clean.txt'),
                                  minibatch_size=32,
                                  img_w=img_w,
                                  img_h=img_h,
@@ -485,7 +482,7 @@ def train(run_name, start_epoch, stop_epoch, img_w):
 
 
 if __name__ == '__main__':
-    run_name = 'test'
+    run_name = datetime.datetime.now().strftime('%Y:%m:%d:%H:%M:%S')
     train(run_name, 0, 20, 128)
     # increase to wider images and start at epoch 20. The learned weights are reloaded
     train(run_name, 20, 25, 512)
