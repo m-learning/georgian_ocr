@@ -199,7 +199,7 @@ def text_to_labels(text, num_classes):
 # to expand to uppercase and symbols
 
 def is_valid_str(in_str):
-    search = re.compile(r'[^ა-ზ\ ]').search
+    search = re.compile(r'[^ა-ჰ ]').search
     return not bool(search(in_str))
 
 
