@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 '''This example uses a convolutional stack followed by a recurrent stack
 and a CTC logloss function to perform optical character recognition
 of generated text images. I have no evidence of whether it actually
@@ -39,6 +42,7 @@ import cairocffi as cairo
 import editdistance
 import numpy as np
 from scipy import ndimage
+import matplotlib.image as mpimg
 import pylab
 from keras import backend as K
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
@@ -52,7 +56,7 @@ from keras.preprocessing import image
 import keras.callbacks
 
 
-OUTPUT_DIR = 'image_ocr'
+OUTPUT_DIR = 'results'
 
 np.random.seed(55)
 
@@ -74,6 +78,47 @@ def speckle(img):
 # also uses a random font, a slight random rotation,
 # and a random amount of speckle noise
 
+def translate(text):
+  result = ''
+  chars = { u'ა': 'a',
+        u'ბ': 'b',
+        u'გ': 'g',
+        u'დ': 'd',
+        u'ე': 'e',
+        u'ვ': 'v',
+        u'ზ': 'z',
+        u'თ': 'T',
+        u'ი': 'i',
+        u'კ': 'k',
+        u'ლ': 'l',
+        u'მ': 'm',
+        u'ნ': 'n',
+        u'ო': 'o',
+        u'პ': 'p',
+        u'ჟ': 'J',
+        u'რ': 'r',
+        u'ს': 's',
+        u'ტ': 't',
+        u'უ': 'u',
+        u'ფ': 'f',
+        u'ქ': 'q',
+        u'ღ': 'R',
+        u'ყ': 'y',
+        u'შ': 'S',
+        u'ჩ': 'C',
+        u'ც': 'c',
+        u'ძ': 'Z',
+        u'წ': 'w',
+        u'ჭ': 'W',
+        u'ხ': 'x',
+        u'ჯ': 'j',
+        u'ჰ': 'h',
+        u' ': ' ',
+        }
+  for char in text:
+     result += chars[char]
+  return result
+
 def paint_text(text, w, h, rotate=False, ud=False, multi_fonts=False):
     surface = cairo.ImageSurface(cairo.FORMAT_RGB24, w, h)
     with cairo.Context(surface) as context:
@@ -81,13 +126,13 @@ def paint_text(text, w, h, rotate=False, ud=False, multi_fonts=False):
         context.paint()
         # this font list works in Centos 7
         if multi_fonts:
-            fonts = ['Century Schoolbook', 'Courier', 'STIX', 'URW Chancery L', 'FreeMono']
+            fonts = ['AcadNusx', 'Avaza Mtavruli']
             context.select_font_face(np.random.choice(fonts), cairo.FONT_SLANT_NORMAL,
                                      np.random.choice([cairo.FONT_WEIGHT_BOLD, cairo.FONT_WEIGHT_NORMAL]))
         else:
-            context.select_font_face('Courier', cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+            context.select_font_face('AcadNusx', cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
         context.set_font_size(25)
-        box = context.text_extents(text)
+        box = context.text_extents(translate(text))
         border_w_h = (4, 4)
         if box[2] > (w - 2 * border_w_h[1]) or box[3] > (h - 2 * border_w_h[0]):
             raise IOError('Could not fit string into image. Max char count is too large for given image width.')
@@ -103,7 +148,7 @@ def paint_text(text, w, h, rotate=False, ud=False, multi_fonts=False):
             top_left_y = h // 2
         context.move_to(top_left_x - int(box[0]), top_left_y - int(box[1]))
         context.set_source_rgb(0, 0, 0)
-        context.show_text(text)
+        context.show_text(translate(text))
 
     buf = surface.get_data()
     a = np.frombuffer(buf, np.uint8)
@@ -114,7 +159,7 @@ def paint_text(text, w, h, rotate=False, ud=False, multi_fonts=False):
     if rotate:
         a = image.random_rotation(a, 3 * (w - top_left_x) / w + 1)
     a = speckle(a)
-
+    #mpimg.imsave(text + ".png",a[0])
     return a
 
 
@@ -143,10 +188,10 @@ def shuffle_mats_or_lists(matrix_list, stop_ind=None):
 def text_to_labels(text, num_classes):
     ret = []
     for char in text:
-        if char >= 'a' and char <= 'z':
-            ret.append(ord(char) - ord('a'))
+        if char >= u'ა' and char <= u'ჰ':
+            ret.append(ord(char) - ord(u'ა'))
         elif char == ' ':
-            ret.append(26)
+            ret.append(33)
     return ret
 
 
@@ -154,7 +199,7 @@ def text_to_labels(text, num_classes):
 # to expand to uppercase and symbols
 
 def is_valid_str(in_str):
-    search = re.compile(r'[^a-z\ ]').search
+    search = re.compile(r'[^ა-ზ\ ]').search
     return not bool(search(in_str))
 
 
@@ -179,7 +224,7 @@ class TextImageGenerator(keras.callbacks.Callback):
         self.absolute_max_string_len = absolute_max_string_len
 
     def get_output_size(self):
-        return 28
+        return 34
 
     # num_words can be independent of the epoch size due to the use of generators
     # as max_string_len grows, num_words can grow
@@ -200,21 +245,22 @@ class TextImageGenerator(keras.callbacks.Callback):
             for line in f:
                 if len(tmp_string_list) == int(self.num_words * mono_fraction):
                     break
-                word = line.rstrip()
+                word = line.rstrip().decode('utf8')
                 if max_string_len == -1 or max_string_len is None or len(word) <= max_string_len:
                     tmp_string_list.append(word)
 
         # bigram file contains common word pairings in english speech
-        with open(self.bigram_file, 'rt') as f:
-            lines = f.readlines()
-            for line in lines:
-                if len(tmp_string_list) == self.num_words:
-                    break
-                columns = line.lower().split()
-                word = columns[0] + ' ' + columns[1]
-                if is_valid_str(word) and \
-                        (max_string_len == -1 or max_string_len is None or len(word) <= max_string_len):
-                    tmp_string_list.append(word)
+        if self.bigram_file:
+          with open(self.bigram_file, 'rt') as f:
+              lines = f.readlines()
+              for line in lines:
+                  if len(tmp_string_list) == self.num_words:
+                      break
+                  columns = line.lower().split()
+                  word = columns[0] + ' ' + columns[1]
+                  if is_valid_str(word) and \
+                          (max_string_len == -1 or max_string_len is None or len(word) <= max_string_len):
+                      tmp_string_list.append(word)
         if len(tmp_string_list) != self.num_words:
             raise IOError('Could not pull enough words from supplied monogram and bigram files. ')
         # interlace to mix up the easy and hard words
@@ -293,7 +339,7 @@ class TextImageGenerator(keras.callbacks.Callback):
             yield ret
 
     def on_train_begin(self, logs={}):
-        self.build_word_list(16000, 4, 1)
+        self.build_word_list(16000, 6, 1)
         self.paint_func = lambda text: paint_text(text, self.img_w, self.img_h,
                                                   rotate=False, ud=False, multi_fonts=False)
 
@@ -335,9 +381,9 @@ def decode_batch(test_func, word_batch):
         # 26 is space, 27 is CTC blank char
         outstr = ''
         for c in out_best:
-            if c >= 0 and c < 26:
-                outstr += chr(c + ord('a'))
-            elif c == 26:
+            if c >= 0 and c < 33:
+                outstr += unichr(c + ord(u'ა'))
+            elif c == 33:
                 outstr += ' '
         ret.append(outstr)
     return ret
@@ -388,7 +434,7 @@ class VizCallback(keras.callbacks.Callback):
             else:
                 the_input = word_batch['the_input'][i, :, :, 0]
             pylab.imshow(the_input.T, cmap='Greys_r')
-            pylab.xlabel('Truth = \'%s\'\nDecoded = \'%s\'' % (word_batch['source_str'][i], res[i]))
+            pylab.xlabel('Decoded = \'%s\'' % (translate(res[i])))
         fig = pylab.gcf()
         fig.set_size_inches(10, 13)
         pylab.savefig(os.path.join(self.output_dir, 'e%02d.png' % (epoch)))
@@ -414,11 +460,11 @@ def train(run_name, start_epoch, stop_epoch, img_w):
     else:
         input_shape = (img_w, img_h, 1)
 
-    fdir = os.path.dirname(get_file('wordlists.tgz',
-                                    origin='http://www.isosemi.com/datasets/wordlists.tgz', untar=True))
+    #fdir = os.path.dirname(get_file('wordlists.tgz',
+    #                                origin='http://www.isosemi.com/datasets/wordlists.tgz', untar=True))
 
-    img_gen = TextImageGenerator(monogram_file=os.path.join(fdir, 'wordlist_mono_clean.txt'),
-                                 bigram_file=os.path.join(fdir, 'wordlist_bi_clean.txt'),
+    img_gen = TextImageGenerator(monogram_file='data/words',
+                                 bigram_file=None,#'data/bigrams',
                                  minibatch_size=32,
                                  img_w=img_w,
                                  img_h=img_h,
@@ -482,7 +528,7 @@ def train(run_name, start_epoch, stop_epoch, img_w):
 
 
 if __name__ == '__main__':
-    run_name = datetime.datetime.now().strftime('%Y:%m:%d:%H:%M:%S')
+    run_name = './'
     train(run_name, 0, 20, 128)
     # increase to wider images and start at epoch 20. The learned weights are reloaded
-    train(run_name, 20, 25, 512)
+    #train(run_name, 20, 25, 512)
