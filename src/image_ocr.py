@@ -126,7 +126,7 @@ def paint_text(text, w, h, rotate=False, ud=False, multi_fonts=False):
         context.paint()
         # this font list works in Centos 7
         if multi_fonts:
-            fonts = ['AcadNusx', 'Avaza Mtavruli']
+            fonts = ['AcadNusx', 'AcadMtavr','Acad Nusx Geo','LitNusx','Chveulebrivi TT','DumbaNusx']
             context.select_font_face(np.random.choice(fonts), cairo.FONT_SLANT_NORMAL,
                                      np.random.choice([cairo.FONT_WEIGHT_BOLD, cairo.FONT_WEIGHT_NORMAL]))
         else:
@@ -423,7 +423,7 @@ class VizCallback(keras.callbacks.Callback):
         self.show_edit_distance(256)
         word_batch = next(self.text_img_gen)[0]
         res = decode_batch(self.test_func, word_batch['the_input'][0:self.num_display_words])
-        if word_batch['the_input'][0].shape[0] < 256:
+        if word_batch['the_input'][0].shape[0] <= 256:
             cols = 2
         else:
             cols = 1
@@ -434,7 +434,7 @@ class VizCallback(keras.callbacks.Callback):
             else:
                 the_input = word_batch['the_input'][i, :, :, 0]
             pylab.imshow(the_input.T, cmap='Greys_r')
-            pylab.xlabel('Decoded = \'%s\'' % (translate(res[i])))
+            pylab.xlabel('Decoded = \'%s\'' % (res[i].decode('utf8')))
         fig = pylab.gcf()
         fig.set_size_inches(10, 13)
         pylab.savefig(os.path.join(self.output_dir, 'e%02d.png' % (epoch)))
@@ -529,6 +529,7 @@ def train(run_name, start_epoch, stop_epoch, img_w):
 
 if __name__ == '__main__':
     run_name = './'
-    train(run_name, 0, 20, 128)
+    train(run_name, 0, 6, 128)
+    train(run_name, 6, 20, 256)
     # increase to wider images and start at epoch 20. The learned weights are reloaded
-    #train(run_name, 20, 25, 512)
+    train(run_name, 20, 25, 512)

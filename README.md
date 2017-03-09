@@ -7,5 +7,5 @@
     pip install cairocffi
     pip install editdistance
     pip install nose2
-
+    cp fonts/* /usr/share/fonts/truetype
 
