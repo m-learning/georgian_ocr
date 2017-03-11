@@ -20,6 +20,19 @@ import matplotlib as mpl
 mpl.use('Agg')
 pylab.ioff()
 
+def parse_eval_arguments():
+  
+  parser = argparse.ArgumentParser(description='Georgian OCR')
+  parser.add_argument('--image', metavar='image_path', type=str,
+            help='Path to the image to recognize.')
+  parser.add_argument('--weights', metavar='weights_path', type=str,
+            help='Path to the weights.')
+  parser.add_argument('--width', metavar='image_width', type=int,
+            help='image width: 128 or 512 (128 is default)', default=128)
+  (args, _) = parser.parse_args()
+  
+  return args
+
 def parse_arguments():
   """Parses command line arguments
     Returns:
