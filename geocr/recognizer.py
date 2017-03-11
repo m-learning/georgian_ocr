@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 python -m cnn.ocr.recognizer --image path_to_image --model weights.h5 [--width 512]
 
@@ -11,6 +14,7 @@ from __future__ import unicode_literals
 import Image
 import argparse
 import itertools
+import os
 
 from keras import backend as K
 from keras.models import model_from_yaml
@@ -95,7 +99,7 @@ def init_arguments():
 						help='Path to model')
 	return parser.parse_args()
 
-def _config_array(img_w, img_h, array):
+def _config_array(array, img_w, img_h):
 	"""Configuration for image arrays
 		Args:
 			img_w - image width
@@ -113,32 +117,41 @@ def _config_array(img_w, img_h, array):
 	
 	return array
 
-if __name__ == '__main__':
-	"""Runs OCR recognizer"""
-	
-	args = init_arguments()
-	img_w = args.width
-	img_h = 64
-	
-	img = Image.open(args.image)
+def predict_text(model, image):
+	img = Image.open(image)
 	img = img.convert("L")
 	array = np.asarray(img.getdata(), dtype=np.float32)
 	array /= 255.0
 	array = np.expand_dims(array, 0)
-	
-	array = _config_array(img_w, img_h)
-	
+
+	array = _config_array(array, img_w, img_h)
+	pred = model.predict(array, batch_size=1, verbose=1)
+	print(decode_result(pred))
+
+
+if __name__ == '__main__':
+	"""Runs OCR recognizer"""
+
+	args = init_arguments()
+	img_w = args.width
+	img_h = 64
+
 	yaml_file = open(args.model, 'r')
 	loaded_model_yaml = yaml_file.read()
 	yaml_file.close()
 	model = model_from_yaml(loaded_model_yaml)
-	
+
 	model.load_weights(args.weights)
 	model.summary()
-	print("Loaded model from disk")
-	
-	# sgd = SGD(lr=0.02, decay=1e-6, momentum=0.9, nesterov=True, clipnorm=5)
-	# model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
-	pred = model.predict(array, batch_size=1, verbose=1)
-	
-	print(decode_result(pred))
+
+	if os.path.isfile(args.image):
+		predict_text(model, args.image)
+	else:
+		# onlyfiles = [f for f in os.listdir(args.image) if os.path.isfile(os.path.join(args.image, f))]
+		for (dirpath, dirnames, filenames) in os.walk(args.image):
+			for filename in filenames:
+				predict_text(model, os.path.join(dirpath, filename))
+			break
+
+
+
