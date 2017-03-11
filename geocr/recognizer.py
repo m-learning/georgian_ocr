@@ -83,7 +83,7 @@ def decode_result(out):
 			elif c == 33:
 				out_str += ' '
 		ret.append(translate(out_str))
-	return ret
+	return ret[0]
 
 
 def init_arguments():
@@ -113,7 +113,7 @@ def _config_array(array, img_w, img_h):
 		array = array.reshape([1, 1, img_w, img_h])
 	else:
 		array = array.reshape([1, img_w, img_h, 1])
-	print(array.shape)
+	# print(array.shape)
 	
 	return array
 
@@ -125,7 +125,7 @@ def predict_text(model, image):
 	array = np.expand_dims(array, 0)
 
 	array = _config_array(array, img_w, img_h)
-	pred = model.predict(array, batch_size=1, verbose=1)
+	pred = model.predict(array, batch_size=1, verbose=0)
 	print(decode_result(pred))
 
 
