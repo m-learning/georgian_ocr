@@ -95,11 +95,12 @@ def init_arguments():
 						help='Path to model')
 	return parser.parse_args()
 
-def _config_array(img_w, img_h):
+def _config_array(img_w, img_h, array):
 	"""Configuration for image arrays
 		Args:
 			img_w - image width
 			img_h - image height
+			array - input image tensor
 		Returns:
 			array - configured image tensor
 	"""

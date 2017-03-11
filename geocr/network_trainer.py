@@ -88,3 +88,4 @@ if __name__ == '__main__':
   train_network(args.run_name, args.start_epoch, args.stop_epoch, args.img_width)
   # increase to wider images and start at epoch 20. The learned weights are reloaded
   train_network(args.run_name, args.stop_epoch, args.stop_second_phase, args.second_phase_width)
+  train_network(args.run_name, args.stop_second_phase, args.stop_third_phase, args.third_phase_width)

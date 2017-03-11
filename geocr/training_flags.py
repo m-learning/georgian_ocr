@@ -26,21 +26,21 @@ flag_args = None
 def parse_eval_arguments():
   
   parser = argparse.ArgumentParser(description='Georgian OCR')
-  parser.add_argument('--image', 
-                      metavar='image_path', 
+  parser.add_argument('--image',
+                      metavar='image_path',
                       type=str,
                       help='Path to the image to recognize.')
-  parser.add_argument('--weights', 
-                      metavar='weights_path', 
+  parser.add_argument('--weights',
+                      metavar='weights_path',
                       type=str,
                       help='Path to the weights.')
-  parser.add_argument('--width', 
-                      metavar='image_width', 
+  parser.add_argument('--width',
+                      metavar='image_width',
                       type=int,
                       default=128,
                       help='image width: 128 or 512 (128 is default)')
-  parser.add_argument('--model', 
-                      metavar='model', 
+  parser.add_argument('--model',
+                      metavar='model',
                       type=str,
                       help='Path to model')
   (args, _) = parser.parse_args()
@@ -60,6 +60,10 @@ def parse_arguments():
                       help='Input image width')
   parser.add_argument('--second_phase_width',
                       type=int,
+                      default=256,
+                      help='Input image width for second phase of training')
+  parser.add_argument('--third_phase_width',
+                      type=int,
                       default=512,
                       help='Input image width for second phase of training')
   parser.add_argument('--start_epoch',
@@ -68,12 +72,16 @@ def parse_arguments():
                       help='Training start epoch')
   parser.add_argument('--stop_epoch',
                       type=int,
-                      default=20,
+                      default=6,
                       help='Training stop epoch')
   parser.add_argument('--stop_second_phase',
                       type=int,
-                      default=25,
+                      default=20,
                       help='Training stop epoch for second phase')
+  parser.add_argument('--stop_third_phase',
+                      type=int,
+                      default=25,
+                      help='Training stop epoch for third phase')
   parser.add_argument('--run_name',
                       type=str,
                       default=datetime.datetime.now().strftime('%Y:%m:%d:%H:%M:%S'),
