@@ -7,15 +7,19 @@ image height must be 64 px, width 128 or 512 px (128 is default)
 """
 
 from __future__ import unicode_literals
-import Image
-import itertools
-from keras.models import model_from_yaml
-from keras import backend as K
 
-import geocr.network_model as network
-import geocr.training_flags as flags
+import Image
+import argparse
+import itertools
+
+from keras import backend as K
+from keras.models import model_from_yaml
+
 import numpy as np
 
+
+# import geocr.network_model as network
+# import geocr.training_flags as flags
 chars = {
       u'ა': 'a',
       u'ბ': 'b',
@@ -79,6 +83,7 @@ def decode_result(out):
 
 
 def init_arguments():
+	
 	parser = argparse.ArgumentParser(description='Georgian OCR')
 	parser.add_argument('--image', metavar='image_path', type=str,
 						help='Path to the image to recognize.')
@@ -90,34 +95,49 @@ def init_arguments():
 						help='Path to model')
 	return parser.parse_args()
 
+def _config_array(img_w, img_h):
+	"""Configuration for image arrays
+		Args:
+			img_w - image width
+			img_h - image height
+		Returns:
+			array - configured image tensor
+	"""
+	
+	if K.image_dim_ordering() == 'th':
+		array = array.reshape([1, 1, img_w, img_h])
+	else:
+		array = array.reshape([1, img_w, img_h, 1])
+	print(array.shape)
+	
+	return array
 
-args = init_arguments()
-img_w = args.width
-img_h = 64
-
-img = Image.open(args.image)
-img = img.convert("L")
-array = np.asarray(img.getdata(), dtype=np.float32)
-array /= 255.0
-array = np.expand_dims(array, 0)
-
-if K.image_dim_ordering() == 'th':
-	array = array.reshape([1, 1, img_w, img_h])
-else:
-	array = array.reshape([1, img_w, img_h, 1])
-print(array.shape)
-
-yaml_file = open(args.model, 'r')
-loaded_model_yaml = yaml_file.read()
-yaml_file.close()
-model = model_from_yaml(loaded_model_yaml)
-
-model.load_weights(args.weights)
-model.summary()
-print("Loaded model from disk")
-
-# sgd = SGD(lr=0.02, decay=1e-6, momentum=0.9, nesterov=True, clipnorm=5)
-# model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
-pred = model.predict(array, batch_size=1, verbose=1)
-
-print(decode_result(pred))
+if __name__ == '__main__':
+	"""Runs OCR recognizer"""
+	
+	args = init_arguments()
+	img_w = args.width
+	img_h = 64
+	
+	img = Image.open(args.image)
+	img = img.convert("L")
+	array = np.asarray(img.getdata(), dtype=np.float32)
+	array /= 255.0
+	array = np.expand_dims(array, 0)
+	
+	array = _config_array(img_w, img_h)
+	
+	yaml_file = open(args.model, 'r')
+	loaded_model_yaml = yaml_file.read()
+	yaml_file.close()
+	model = model_from_yaml(loaded_model_yaml)
+	
+	model.load_weights(args.weights)
+	model.summary()
+	print("Loaded model from disk")
+	
+	# sgd = SGD(lr=0.02, decay=1e-6, momentum=0.9, nesterov=True, clipnorm=5)
+	# model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+	pred = model.predict(array, batch_size=1, verbose=1)
+	
+	print(decode_result(pred))

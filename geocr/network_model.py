@@ -9,6 +9,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
+
 from keras.layers import Input, Dense, Activation
 from keras.layers import Reshape, Lambda, merge
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
@@ -19,7 +21,10 @@ from geocr.network_config import conv_num_filters, filter_size, pool_size, \
                                    rnn_size, time_dense_size, act
 from geocr.network_config import init_img_gen, init_conv_to_rnn_dims, init_input_shape, \
                                    ctc_lambda_func
+from geocr.training_flags import flag_args as flags
 
+
+MODEL_YAML_FILE = 'ocr_model'
 
 def init_model(img_w, output_size=28):
   """Initializes OCR network model
@@ -80,6 +85,27 @@ def ocr_network(img_w):
   
   return (img_gen, input_data, y_pred, network_model)
 
+def _serialize_network(img_w, model):
+  """Serializes network model to YAML file
+    Args:
+    img_w - input image width
+    model - network model
+  """
+
+  model_yaml = model.to_yaml()
+  with open(os.path.join(flags.model_dir, 'model%d.yaml' % img_w), "w") as yaml_file:
+    yaml_file.write(model_yaml)
+
+def _validate_and_serialize(img_w, model):
+  """Serializes network model to YAML file
+    Args:
+    img_w - input image width
+    model - network model
+  """
+      
+  if flags.save_model:
+    _serialize_network(img_w, model)
+
 def init_training_model(img_w):
   """Initializes OCR network model
     Args:
@@ -93,6 +119,7 @@ def init_training_model(img_w):
   """
   
   (img_gen, input_data, y_pred, network_model) = ocr_network(img_w)
+  _validate_and_serialize(img_w, network_model)
   network_model.summary()
 
   labels = Input(name='the_labels', shape=[img_gen.absolute_max_string_len], dtype='float32')
