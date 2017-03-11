@@ -24,6 +24,7 @@ from scipy import ndimage
 
 import cairocffi as cairo
 from geocr.cnn_files import training_file
+from geocr.character_translator import translate_to_geo
 from geocr import font_storadge as _fonts
 import numpy as np
 
@@ -64,7 +65,7 @@ def paint_text(text, w, h, rotate=False, ud=False, multi_fonts=False):
         #context.select_font_face('Courier', cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
         context.select_font_face('Sylfaen', cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
     context.set_font_size(25)
-    box = context.text_extents(text)
+    box = context.text_extents(translate_to_geo(text))
     border_w_h = (4, 4)
     if box[2] > (w - 2 * border_w_h[1]) or box[3] > (h - 2 * border_w_h[0]):
         raise IOError('Could not fit string into image. Max char count is too large for given image width.')
@@ -80,7 +81,7 @@ def paint_text(text, w, h, rotate=False, ud=False, multi_fonts=False):
         top_left_y = h // 2
     context.move_to(top_left_x - int(box[0]), top_left_y - int(box[1]))
     context.set_source_rgb(0, 0, 0)
-    context.show_text(text)
+    context.show_text(translate_to_geo(text))
 
   buf = surface.get_data()
   a = np.frombuffer(buf, np.uint8)
@@ -134,7 +135,7 @@ def text_to_labels(text, num_classes):
 # to expand to uppercase and symbols
 
 def is_valid_str(in_str):
-  search = re.compile(r'[^a-z\ ]').search
+  search = re.compile(r'^[ა-ჰ ]*$').search
   return not bool(search(in_str))
 
 # Uses generator functions to supply train/test with
@@ -158,7 +159,7 @@ class TextImageGenerator(keras.callbacks.Callback):
       self.absolute_max_string_len = absolute_max_string_len
 
   def get_output_size(self):
-      return 28
+      return 34
 
   # num_words can be independent of the epoch size due to the use of generators
   # as max_string_len grows, num_words can grow
@@ -368,7 +369,7 @@ class VizCallback(keras.callbacks.Callback):
             else:
                 the_input = word_batch['the_input'][i, :, :, 0]
             pylab.imshow(the_input.T, cmap='Greys_r')
-            pylab.xlabel('Truth = \'%s\'\nDecoded = \'%s\'' % (word_batch['source_str'][i], res[i]))
+            pylab.xlabel('Truth = \'%s\'\nDecoded = \'%s\'' % (translate_to_geo(word_batch['source_str'][i], res[i])))
         fig = pylab.gcf()
         fig.set_size_inches(10, 13)
         pylab.savefig(os.path.join(self.img_dir, 'e%02d.png' % (epoch)))
