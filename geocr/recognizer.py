@@ -22,12 +22,12 @@ def decode_result(out):
 	for j in range(out.shape[0]):
 		out_best = list(np.argmax(out[j, 2:], 1))
 		out_best = [k for k, _ in itertools.groupby(out_best)]
-		# 26 is space, 27 is CTC blank char
+		# 33 is space, 34 is CTC blank char
 		out_str = ''
 		for c in out_best:
-			if 0 <= c < 26:
+			if 0 <= c < 33:
 				out_str += chr(c + ord('a'))
-			elif c == 26:
+			elif c == 33:
 				out_str += ' '
 		ret.append(out_str)
 	return ret
