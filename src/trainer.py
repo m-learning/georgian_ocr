@@ -161,7 +161,7 @@ def paint_text(text, w, h, rotate=False, ud=False, multi_fonts=False):
 	if rotate:
 		a = image.random_rotation(a, 3 * (w - top_left_x) / w + 1)
 	a = speckle(a)
-	# mpimg.imsave(text + ".png",a[0])
+	# mpimg.imsave(text + ".png", a[0])
 	return a
 
 
@@ -420,10 +420,6 @@ class VizCallback(keras.callbacks.Callback):
               % (num, mean_ed, mean_norm_ed))
 
     def on_epoch_end(self, epoch, logs={}):
-    
-        model_yaml = self.model.to_yaml()
-        with open(os.path.join(self.output_dir, 'model%02d.yaml' % (epoch)), "w") as yaml_file:
-            yaml_file.write(model_yaml)
             
         self.model.save_weights(os.path.join(self.output_dir, 'weights%02d.h5' % (epoch)))
         self.show_edit_distance(256)
@@ -503,7 +499,13 @@ def train(run_name, start_epoch, stop_epoch, img_w):
 	inner = Dense(img_gen.get_output_size(), init='he_normal',
 				  name='dense2')(merge([gru_2, gru_2b], mode='concat'))
 	y_pred = Activation('softmax', name='softmax')(inner)
-	Model(input=[input_data], output=y_pred).summary()
+	model = Model(input=[input_data], output=y_pred)
+
+	model_yaml = model.to_yaml()
+	with open(os.path.join(OUTPUT_DIR, 'model%d.yaml' % img_w), "w") as yaml_file:
+		yaml_file.write(model_yaml)
+
+	model.summary()
 
 	labels = Input(name='the_labels', shape=[img_gen.absolute_max_string_len], dtype='float32')
 	input_length = Input(name='input_length', shape=[1], dtype='int64')

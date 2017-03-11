@@ -4,7 +4,7 @@
 """
 python -m cnn.ocr.recognizer --image path_to_image --model weights.h5 [--width 512]
 
-python -m cnn.ocr.recognizer --weights ./datas/ocr/weights24.h5 --image ./datas/ocr/test.jpeg --width 512
+python -m cnn.ocr.recognizer --weights ./datas/ocr/weights24.h5 --image ./datas/ocr/test512.jpeg --width 512
 
 image height must be 64 px, width 128 or 512 px (128 is default)
 """
