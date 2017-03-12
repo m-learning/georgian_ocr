@@ -68,7 +68,7 @@ python -m src/recognizer \
         -W results/weights20.h5 \
         -i data/chunks \
         -w 256 \
-        -m results/model256.yaml
+        -m results/model256.yaml \
         -e
 ```
 
