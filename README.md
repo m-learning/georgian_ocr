@@ -1,6 +1,6 @@
 # Georgian OCR
 
-### Requierments
+## Requierments
 
     pip install tensorflow
     pip install keras
@@ -8,13 +8,69 @@
     pip install editdistance
     pip install nose2
     cp fonts/* /usr/share/fonts/truetype
+    
+## Train model
+
+```
+python -m src/trainer
+
+```
 
 
+## Generating test images
 
-### Recognition command
+#### for single word
+```
+python -m src/image_generator ტექსტი \
+        -w 256 \
+        -s data/chunks \
 
-`python -m geocr/recognizer --weights results/weights20.h5 --image data/test256_1.jpeg --width 256 --model results/model256.yaml`
+```
 
+#### for many words
+
+apply words separated by space to generate multiple images 
+
+```
+python -m src/image_generator ერთი ორი სამი ოთხი \
+        -w 256 \
+        -s data/chunks \
+
+```
+
+
+## Recognition
+
+#### from file
+
+```
+python -m src/recognizer \
+        -W results/weights20.h5 \
+        -i data/chunks/ერთი.jpg \
+        -w 256 \
+        -m results/model256.yaml
+```
+
+
+#### from folder
+
+```
+python -m src/recognizer \
+        -W results/weights20.h5 \
+        -i data/chunks \
+        -w 256 \
+        -m results/model256.yaml
+```
+
+#### output in english letters
+```
+python -m src/recognizer \
+        -W results/weights20.h5 \
+        -i data/chunks \
+        -w 256 \
+        -m results/model256.yaml
+        -e
+```
 
 
 
