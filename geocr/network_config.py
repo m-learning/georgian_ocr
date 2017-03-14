@@ -112,6 +112,7 @@ def _validate_and_download_bigrams(fdir):
     
 def _download_and_sava_text_files():
   """Downloads and saves training files"""
+  
   if os.path.exists(MONO_DATA_FILE):
     print('Preparing training files')
   else:
@@ -125,5 +126,6 @@ def _download_and_sava_text_files():
 
 def download_and_save():
   """Downloads and saves training files"""
+  
   _download_and_sava_text_files()
   print('training files for mono - gram and bi - gram are ready')

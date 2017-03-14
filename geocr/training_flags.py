@@ -23,7 +23,7 @@ pylab.ioff()
 
 flag_args = None
 
-def flagsread_flags():
+def read_flags():
   """Gets command line configuration parameters
     Returns:
       flag_args - command line arguments
