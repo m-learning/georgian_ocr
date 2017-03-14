@@ -23,6 +23,7 @@ from geocr.data_generators import TextImageGenerator
 img_h = 64
 conv_num_filters = 16
 filter_size = 3
+filter_sizes = (filter_size, filter_size)
 pool_size = 2
 rnn_size = 512
 time_dense_size = 32
