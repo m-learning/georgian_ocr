@@ -11,8 +11,8 @@ from __future__ import print_function
 
 import os
 
-from keras.layers import Input, Dense, Activation
-from keras.layers import Reshape, Lambda
+from keras.layers import Input, Dense, Activation, \
+                         Reshape, Lambda
 from keras.layers.convolutional import Conv2D, MaxPooling2D
 from keras.layers.merge import add, concatenate
 from keras.layers.recurrent import GRU
