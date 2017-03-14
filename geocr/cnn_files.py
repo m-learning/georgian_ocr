@@ -9,7 +9,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from utils.file_utils import cnn_file_utils
+from utils.files.file_utils import cnn_file_utils
 
 
 class training_file(cnn_file_utils):
