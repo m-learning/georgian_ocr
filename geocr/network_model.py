@@ -42,10 +42,10 @@ def init_model(img_w, output_size=28):
   
   input_data = Input(name='the_input', shape=input_shape, dtype='float32')
   inner = Conv2D(conv_num_filters, kernel_size=filter_sizes, border_mode='same',
-                        activation=act, init='he_normal', name='conv1')(input_data)
+                 activation=act, init='he_normal', name='conv1')(input_data)
   inner = MaxPooling2D(pool_size=(pool_size, pool_size), name='max1')(inner)
   inner = Conv2D(conv_num_filters, kernel_size=filter_sizes, border_mode='same',
-                        activation=act, init='he_normal', name='conv2')(inner)
+                 activation=act, init='he_normal', name='conv2')(inner)
   inner = MaxPooling2D(pool_size=(pool_size, pool_size), name='max2')(inner)
 
   conv_to_rnn_dims = init_conv_to_rnn_dims(img_w)
