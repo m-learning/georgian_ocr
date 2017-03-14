@@ -42,10 +42,10 @@ def init_model(img_w, output_size=28):
   
   input_data = Input(name='the_input', shape=input_shape, dtype='float32')
   inner = Conv2D(conv_num_filters, kernel_size=filter_sizes, border_mode='same',
-                 activation=act, init='he_normal', name='conv1')(input_data)
+                 activation=act, kernel_initializer='he_normal', name='conv1')(input_data)
   inner = MaxPooling2D(pool_size=(pool_size, pool_size), name='max1')(inner)
   inner = Conv2D(conv_num_filters, kernel_size=filter_sizes, border_mode='same',
-                 activation=act, init='he_normal', name='conv2')(inner)
+                 activation=act, kernel_initializer='he_normal', name='conv2')(inner)
   inner = MaxPooling2D(pool_size=(pool_size, pool_size), name='max2')(inner)
 
   conv_to_rnn_dims = init_conv_to_rnn_dims(img_w)
@@ -63,7 +63,7 @@ def init_model(img_w, output_size=28):
   gru_2b = GRU(rnn_size, return_sequences=True, go_backwards=True, kernel_initializer='he_normal', name='gru2_b')(gru1_merged)
   gru2_merged = concatenate([gru_2, gru_2b])
   # transforms RNN output to character activations:
-  inner = Dense(output_size, init='he_normal', name='dense2')(gru2_merged)
+  inner = Dense(output_size, kernel_initializer='he_normal', name='dense2')(gru2_merged)
   network_model = Activation('softmax', name='softmax')(inner)
   
   return (input_data, network_model) 
