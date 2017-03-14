@@ -49,15 +49,19 @@ def translate(text):
 		result += chars[char] if char in chars else char
 	return result
 
-
-# this creates larger "blotches" of noise which look
-# more realistic than just adding gaussian noise
-# assumes greyscale with pixels ranging from 0 to 1
-
 def speckle(img):
+	"""this creates larger "blotches" of noise which look
+ 		more realistic than just adding gaussian noise
+ 		assumes greyscale with pixels ranging from 0 to 1
+ 		Args:
+ 			img - image
+ 		Returns:
+ 			img_speck - image greyskale pixels
+ 	"""
 	severity = np.random.uniform(0, 0.6)
 	blur = ndimage.gaussian_filter(np.random.randn(*img.shape) * severity, 1)
 	img_speck = (img + blur)
 	img_speck[img_speck > 1] = 1
 	img_speck[img_speck <= 0] = 0
+	
 	return img_speck
