@@ -23,6 +23,13 @@ pylab.ioff()
 
 flag_args = None
 
+def flagsread_flags():
+  """Gets command line configuration parameters
+    Returns:
+      flag_args - command line arguments
+  """
+  return flag_args
+
 def parse_eval_arguments():
   
   parser = argparse.ArgumentParser(description='Georgian OCR')
