@@ -13,8 +13,8 @@ import os
 
 from keras.layers import Input, Dense, Activation
 from keras.layers import Reshape, Lambda
-from keras.layers.merge import add, concatenate
 from keras.layers.convolutional import Conv2D, MaxPooling2D
+from keras.layers.merge import add, concatenate
 from keras.layers.recurrent import GRU
 from keras.models import Model
 
@@ -41,10 +41,10 @@ def init_model(img_w, output_size=28):
   input_shape = init_input_shape(img_w)
   
   input_data = Input(name='the_input', shape=input_shape, dtype='float32')
-  inner = Conv2D(conv_num_filters, filter_sizes, border_mode='same',
+  inner = Conv2D(conv_num_filters, kernel_size=filter_sizes, border_mode='same',
                         activation=act, init='he_normal', name='conv1')(input_data)
   inner = MaxPooling2D(pool_size=(pool_size, pool_size), name='max1')(inner)
-  inner = Conv2D(conv_num_filters, filter_sizes, border_mode='same',
+  inner = Conv2D(conv_num_filters, kernel_size=filter_sizes, border_mode='same',
                         activation=act, init='he_normal', name='conv2')(inner)
   inner = MaxPooling2D(pool_size=(pool_size, pool_size), name='max2')(inner)
 
@@ -58,10 +58,10 @@ def init_model(img_w, output_size=28):
   # GRU seems to work as well, if not better than LSTM:
   gru_1 = GRU(rnn_size, return_sequences=True, init='he_normal', name='gru1')(inner)
   gru_1b = GRU(rnn_size, return_sequences=True, go_backwards=True, init='he_normal', name='gru1_b')(inner)
-  gru1_merged = add(gru_1, gru_1b)
+  gru1_merged = add([gru_1, gru_1b])
   gru_2 = GRU(rnn_size, return_sequences=True, init='he_normal', name='gru2')(gru1_merged)
   gru_2b = GRU(rnn_size, return_sequences=True, go_backwards=True, init='he_normal', name='gru2_b')(gru1_merged)
-  gru2_merged = concatenate(gru_2, gru_2b)
+  gru2_merged = concatenate([gru_2, gru_2b])
   # transforms RNN output to character activations:
   inner = Dense(output_size, init='he_normal', name='dense2')(gru2_merged)
   network_model = Activation('softmax', name='softmax')(inner)
