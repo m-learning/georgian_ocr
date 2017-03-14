@@ -82,7 +82,7 @@ def ocr_network(img_w):
   img_gen = init_img_gen(img_w)
   output_size = img_gen.get_output_size()
   (input_data, y_pred) = init_model(img_w, output_size=output_size)
-  network_model = Model(input=[input_data], output=y_pred)
+  network_model = Model(inputs=[input_data], outputs=[y_pred])
   
   return (img_gen, input_data, y_pred, network_model)
 
