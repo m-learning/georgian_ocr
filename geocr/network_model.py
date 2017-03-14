@@ -18,7 +18,7 @@ from keras.layers.merge import add, concatenate
 from keras.layers.recurrent import GRU
 from keras.models import Model
 
-from geocr.network_config import conv_num_filters, filter_sizes, pool_size, \
+from geocr.network_config import conv_num_filters, filter_size, pool_size, \
                                    rnn_size, time_dense_size, act
 from geocr.network_config import init_img_gen, init_conv_to_rnn_dims, init_input_shape, \
                                    ctc_lambda_func
@@ -41,10 +41,10 @@ def init_model(img_w, output_size=28):
   input_shape = init_input_shape(img_w)
   
   input_data = Input(name='the_input', shape=input_shape, dtype='float32')
-  inner = Conv2D(conv_num_filters, kernel_size=filter_sizes, padding='same',
+  inner = Conv2D(conv_num_filters, kernel_size=(filter_size, filter_size), padding='same',
                  activation=act, kernel_initializer='he_normal', name='conv1')(input_data)
   inner = MaxPooling2D(pool_size=(pool_size, pool_size), name='max1')(inner)
-  inner = Conv2D(conv_num_filters, kernel_size=filter_sizes, padding='same',
+  inner = Conv2D(conv_num_filters, kernel_size=(filter_size, filter_size), padding='same',
                  activation=act, kernel_initializer='he_normal', name='conv2')(inner)
   inner = MaxPooling2D(pool_size=(pool_size, pool_size), name='max2')(inner)
 
