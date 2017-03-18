@@ -44,17 +44,11 @@ import editdistance
 import keras.callbacks
 import numpy as np
 from keras import backend as K
-<<<<<<< HEAD
 from keras.layers.convolutional import Conv2D, MaxPooling2D
 from keras.layers import Input, Dense, Activation
 from keras.layers import Reshape, Lambda
 from keras.layers.merge import add, concatenate
 from keras.models import Model
-=======
-from keras.layers import Input, Dense, Activation
-from keras.layers import Reshape, Lambda, merge
-from keras.layers.convolutional import Convolution2D, MaxPooling2D
->>>>>>> c69bd3413023f65f799089d7a8e2e835b8070ee7
 from keras.layers.recurrent import GRU
 from keras.models import Model
 from keras.optimizers import SGD
