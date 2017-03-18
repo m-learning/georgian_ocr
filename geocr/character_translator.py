@@ -11,7 +11,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-
 chars = { 
       u'ა': 'a',
       u'ბ': 'b',

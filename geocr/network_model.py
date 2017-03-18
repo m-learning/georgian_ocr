@@ -89,8 +89,8 @@ def ocr_network(img_w):
 def _serialize_network(img_w, model):
   """Serializes network model to YAML file
     Args:
-    img_w - input image width
-    model - network model
+      img_w - input image width
+      model - network model
   """
 
   model_yaml = model.to_yaml()
@@ -100,8 +100,8 @@ def _serialize_network(img_w, model):
 def _validate_and_serialize(img_w, model):
   """Serializes network model to YAML file
     Args:
-    img_w - input image width
-    model - network model
+      img_w - input image width
+      model - network model
   """
       
   if flags().save_model:

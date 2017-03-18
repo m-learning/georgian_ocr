@@ -92,7 +92,7 @@ def paint_text(text, w, h, rotate=False, ud=False, multi_fonts=False):
   a = a.astype(np.float32) / 255
   a = np.expand_dims(a, 0)
   if rotate:
-      a = image.random_rotation(a, 3 * (w - top_left_x) / w + 1)
+    a = image.random_rotation(a, 3 * (w - top_left_x) / w + 1)
   a = speckle(a)
 
   return a

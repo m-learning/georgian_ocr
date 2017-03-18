@@ -66,12 +66,12 @@ def _config_array(array, img_w, img_h):
 	return array
 
 def predict_text(model, image):
+	
 	img = Image.open(image)
 	img = img.convert("L")
 	array = np.asarray(img.getdata(), dtype=np.float32)
 	array /= 255.0
 	array = np.expand_dims(array, 0)
-
 	array = _config_array(array, img_w, img_h)
 	pred = model.predict(array, batch_size=1, verbose=0)
 	
