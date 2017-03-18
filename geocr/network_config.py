@@ -75,15 +75,13 @@ def init_img_gen(img_w):
     Returns:
       img_gen - image generator object
   """
-  
-  img_gen = TextImageGenerator(monogram_file=MONO_DATA_FILE,
+  return TextImageGenerator(monogram_file=MONO_DATA_FILE,
                                bigram_file=BI_DATA_FILE,
                                minibatch_size=32,
                                img_w=img_w,
                                img_h=img_h,
                                downsample_factor=(pool_size ** 2),
                                val_split=words_per_epoch - val_words)
-  return img_gen
 
 def ctc_lambda_func(args):
   """Lambda for CTC input

@@ -63,9 +63,7 @@ def _config_array(array, img_w, img_h):
 	else:
 		array = array.reshape([1, img_w, img_h, 1])
 	# print(array.shape)
-	
 	return array
-
 
 def predict_text(model, image):
 	img = Image.open(image)
@@ -76,8 +74,8 @@ def predict_text(model, image):
 
 	array = _config_array(array, img_w, img_h)
 	pred = model.predict(array, batch_size=1, verbose=0)
+	
 	return decode_result(pred)
-
 
 if __name__ == '__main__':
 	"""Runs OCR recognizer"""
@@ -110,5 +108,3 @@ if __name__ == '__main__':
 		print(translate(result))
 	else:
 		print(result)
-
-
