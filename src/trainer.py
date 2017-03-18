@@ -479,6 +479,6 @@ def train(run_name, start_epoch, stop_epoch, img_w):
 
 if __name__ == '__main__':
 	run_name = './'
-	train(run_name, 0, 6, 128)
+	train(run_name, 0, 6, 160)
 	train(run_name, 6, 20, 256)
 	train(run_name, 20, 25, 512)
