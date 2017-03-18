@@ -20,6 +20,7 @@ from geocr import training_flags as flags
 from geocr.data_generators import VizCallback
 from geocr.network_config import OUTPUT_DIR
 from geocr.network_config import words_per_epoch, val_words
+from geocr import data_preprocessor  as preprocessor
 
 
 def init_sgd_optimizer():
@@ -82,6 +83,7 @@ def train_network(run_name, start_epoch, stop_epoch, img_w):
 if __name__ == '__main__':
   """Train OCR model on custom images"""
   
+  preprocessor.unzip_word_files()
   args = flags.parse_arguments()
   config.download_and_save()
   train_network(args.run_name, args.start_epoch, args.stop_epoch, args.img_width)
