@@ -23,6 +23,7 @@ from geocr.data_generators import TextImageGenerator
 img_h = 64
 conv_num_filters = 16
 filter_size = 3
+filter_sizes = (filter_size, filter_size)
 pool_size = 2
 rnn_size = 512
 time_dense_size = 32
@@ -112,6 +113,7 @@ def _validate_and_download_bigrams(fdir):
     
 def _download_and_sava_text_files():
   """Downloads and saves training files"""
+  
   if os.path.exists(MONO_DATA_FILE):
     print('Preparing training files')
   else:
@@ -125,5 +127,6 @@ def _download_and_sava_text_files():
 
 def download_and_save():
   """Downloads and saves training files"""
+  
   _download_and_sava_text_files()
   print('training files for mono - gram and bi - gram are ready')

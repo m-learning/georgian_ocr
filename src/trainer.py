@@ -19,13 +19,13 @@ the word list to include two words separated by a space.
 The table below shows normalized edit distance values. Theano uses
 a slightly different CTC implementation, hence the different results.
 
-            Norm. ED
+			Norm. ED
 Epoch |   TF   |   TH
 ------------------------
-    10   0.027   0.064
-    15   0.038   0.035
-    20   0.043   0.045
-    25   0.014   0.019
+	10   0.027   0.064
+	15   0.038   0.035
+	20   0.043   0.045
+	25   0.014   0.019
 
 This requires cairo and editdistance packages:
 pip install cairocffi
@@ -34,93 +34,42 @@ pip install editdistance
 Created by Mike Henry
 https://github.com/mbhenry/
 '''
-import os
 import itertools
+import os
+import pylab
 import re
-import datetime
+
 import cairocffi as cairo
 import editdistance
+import keras.callbacks
 import numpy as np
-from scipy import ndimage
-import matplotlib.image as mpimg
-import pylab
 from keras import backend as K
+<<<<<<< HEAD
 from keras.layers.convolutional import Conv2D, MaxPooling2D
 from keras.layers import Input, Dense, Activation
 from keras.layers import Reshape, Lambda
 from keras.layers.merge import add, concatenate
 from keras.models import Model
+=======
+from keras.layers import Input, Dense, Activation
+from keras.layers import Reshape, Lambda, merge
+from keras.layers.convolutional import Convolution2D, MaxPooling2D
+>>>>>>> c69bd3413023f65f799089d7a8e2e835b8070ee7
 from keras.layers.recurrent import GRU
+from keras.models import Model
 from keras.optimizers import SGD
-from keras.utils.data_utils import get_file
 from keras.preprocessing import image
-import keras.callbacks
 
-chars = { 
-      u'ა': 'a',
-      u'ბ': 'b',
-      u'გ': 'g',
-      u'დ': 'd',
-      u'ე': 'e',
-      u'ვ': 'v',
-      u'ზ': 'z',
-      u'თ': 'T',
-      u'ი': 'i',
-      u'კ': 'k',
-      u'ლ': 'l',
-      u'მ': 'm',
-      u'ნ': 'n',
-      u'ო': 'o',
-      u'პ': 'p',
-      u'ჟ': 'J',
-      u'რ': 'r',
-      u'ს': 's',
-      u'ტ': 't',
-      u'უ': 'u',
-      u'ფ': 'f',
-      u'ქ': 'q',
-      u'ღ': 'R',
-      u'ყ': 'y',
-      u'შ': 'S',
-      u'ჩ': 'C',
-      u'ც': 'c',
-      u'ძ': 'Z',
-      u'წ': 'w',
-      u'ჭ': 'W',
-      u'ხ': 'x',
-      u'ჯ': 'j',
-      u'ჰ': 'h',
-      u' ': ' ',
-      }
+from utils.utils import translate, speckle
 
 OUTPUT_DIR = 'results'
 
 np.random.seed(55)
 
 
-# this creates larger "blotches" of noise which look
-# more realistic than just adding gaussian noise
-# assumes greyscale with pixels ranging from 0 to 1
-
-def speckle(img):
-	severity = np.random.uniform(0, 0.6)
-	blur = ndimage.gaussian_filter(np.random.randn(*img.shape) * severity, 1)
-	img_speck = (img + blur)
-	img_speck[img_speck > 1] = 1
-	img_speck[img_speck <= 0] = 0
-	return img_speck
-
-
 # paints the string in a random location the bounding box
 # also uses a random font, a slight random rotation,
 # and a random amount of speckle noise
-
-def translate(text):
-  result = ''
-
-  for char in text:
-     result += chars[char]
-  return result
 
 def paint_text(text, w, h, rotate=False, ud=False, multi_fonts=False):
 	surface = cairo.ImageSurface(cairo.FORMAT_RGB24, w, h)
@@ -162,7 +111,7 @@ def paint_text(text, w, h, rotate=False, ud=False, multi_fonts=False):
 	if rotate:
 		a = image.random_rotation(a, 3 * (w - top_left_x) / w + 1)
 	a = speckle(a)
-	mpimg.imsave(text + ".png",a[0])
+	# mpimg.imsave(text + ".png", a[0])
 	return a
 
 
@@ -393,59 +342,55 @@ def decode_batch(test_func, word_batch):
 
 class VizCallback(keras.callbacks.Callback):
 
-    def __init__(self, run_name, test_func, text_img_gen, num_display_words=6):
-        self.test_func = test_func
-        self.output_dir = os.path.join(
-            OUTPUT_DIR, run_name)
-        self.text_img_gen = text_img_gen
-        self.num_display_words = num_display_words
-        if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
+	def __init__(self, run_name, test_func, text_img_gen, num_display_words=6):
+		self.test_func = test_func
+		self.output_dir = os.path.join(
+			OUTPUT_DIR, run_name)
+		self.text_img_gen = text_img_gen
+		self.num_display_words = num_display_words
+		if not os.path.exists(self.output_dir):
+			os.makedirs(self.output_dir)
 
-    def show_edit_distance(self, num):
-        num_left = num
-        mean_norm_ed = 0.0
-        mean_ed = 0.0
-        while num_left > 0:
-            word_batch = next(self.text_img_gen)[0]
-            num_proc = min(word_batch['the_input'].shape[0], num_left)
-            decoded_res = decode_batch(self.test_func, word_batch['the_input'][0:num_proc])
-            for j in range(0, num_proc):
-                edit_dist = editdistance.eval(decoded_res[j], word_batch['source_str'][j])
-                mean_ed += float(edit_dist)
-                mean_norm_ed += float(edit_dist) / len(word_batch['source_str'][j])
-            num_left -= num_proc
-        mean_norm_ed = mean_norm_ed / num
-        mean_ed = mean_ed / num
-        print('\nOut of %d samples:  Mean edit distance: %.3f Mean normalized edit distance: %0.3f'
-              % (num, mean_ed, mean_norm_ed))
+	def show_edit_distance(self, num):
+		num_left = num
+		mean_norm_ed = 0.0
+		mean_ed = 0.0
+		while num_left > 0:
+			word_batch = next(self.text_img_gen)[0]
+			num_proc = min(word_batch['the_input'].shape[0], num_left)
+			decoded_res = decode_batch(self.test_func, word_batch['the_input'][0:num_proc])
+			for j in range(0, num_proc):
+				edit_dist = editdistance.eval(decoded_res[j], word_batch['source_str'][j])
+				mean_ed += float(edit_dist)
+				mean_norm_ed += float(edit_dist) / len(word_batch['source_str'][j])
+			num_left -= num_proc
+		mean_norm_ed = mean_norm_ed / num
+		mean_ed = mean_ed / num
+		print('\nOut of %d samples:  Mean edit distance: %.3f Mean normalized edit distance: %0.3f'
+			  % (num, mean_ed, mean_norm_ed))
 
-    def on_epoch_end(self, epoch, logs={}):
-    
-        model_yaml = self.model.to_yaml()
-        with open(os.path.join(self.output_dir, 'model%02d.yaml' % (epoch)), "w") as yaml_file:
-            yaml_file.write(model_yaml)
-            
-        self.model.save_weights(os.path.join(self.output_dir, 'weights%02d.h5' % (epoch)))
-        self.show_edit_distance(256)
-        word_batch = next(self.text_img_gen)[0]
-        res = decode_batch(self.test_func, word_batch['the_input'][0:self.num_display_words])
-        if word_batch['the_input'][0].shape[0] <= 256:
-            cols = 2
-        else:
-            cols = 1
-        for i in range(self.num_display_words):
-            pylab.subplot(self.num_display_words // cols, cols, i + 1)
-            if K.image_dim_ordering() == 'th':
-                the_input = word_batch['the_input'][i, 0, :, :]
-            else:
-                the_input = word_batch['the_input'][i, :, :, 0]
-            pylab.imshow(the_input.T, cmap='Greys_r')
-            pylab.xlabel('Truth = \'%s\'\nDecoded = \'%s\'' % (translate(word_batch['source_str'][i]), translate(res[i])))
-        fig = pylab.gcf()
-        fig.set_size_inches(10, 13)
-        pylab.savefig(os.path.join(self.output_dir, 'e%02d.png' % (epoch)))
-        pylab.close()
+	def on_epoch_end(self, epoch, logs={}):
+			
+		self.model.save_weights(os.path.join(self.output_dir, 'weights%02d.h5' % (epoch)))
+		self.show_edit_distance(256)
+		word_batch = next(self.text_img_gen)[0]
+		res = decode_batch(self.test_func, word_batch['the_input'][0:self.num_display_words])
+		if word_batch['the_input'][0].shape[0] <= 256:
+			cols = 2
+		else:
+			cols = 1
+		for i in range(self.num_display_words):
+			pylab.subplot(self.num_display_words // cols, cols, i + 1)
+			if K.image_dim_ordering() == 'th':
+				the_input = word_batch['the_input'][i, 0, :, :]
+			else:
+				the_input = word_batch['the_input'][i, :, :, 0]
+			pylab.imshow(the_input.T, cmap='Greys_r')
+			pylab.xlabel('Truth = \'%s\'\nDecoded = \'%s\'' % (translate(word_batch['source_str'][i]), translate(res[i])))
+		fig = pylab.gcf()
+		fig.set_size_inches(10, 13)
+		pylab.savefig(os.path.join(self.output_dir, 'e%02d.png' % (epoch)))
+		pylab.close()
 
 def train(run_name, start_epoch, stop_epoch, img_w):
 	# Input Parameters
@@ -467,7 +412,7 @@ def train(run_name, start_epoch, stop_epoch, img_w):
 		input_shape = (img_w, img_h, 1)
 
 	# fdir = os.path.dirname(get_file('wordlists.tgz',
-	#                                origin='http://www.isosemi.com/datasets/wordlists.tgz', untar=True))
+	#								origin='http://www.isosemi.com/datasets/wordlists.tgz', untar=True))
 
 	img_gen = TextImageGenerator(monogram_file='data/words',
 								 bigram_file=None,  # 'data/bigrams',
@@ -504,7 +449,14 @@ def train(run_name, start_epoch, stop_epoch, img_w):
 	inner = Dense(img_gen.get_output_size(), kernel_initializer='he_normal',
 				  name='dense2')(concatenate([gru_2, gru_2b]))
 	y_pred = Activation('softmax', name='softmax')(inner)
-	Model(inputs=[input_data], outputs=y_pred).summary()
+
+	model = Model(inputs=[input_data], outputs=y_pred)
+
+	model_yaml = model.to_yaml()
+	with open(os.path.join(OUTPUT_DIR, 'model%d.yaml' % img_w), "w") as yaml_file:
+		yaml_file.write(model_yaml)
+
+	model.summary()
 
 	labels = Input(name='the_labels', shape=[img_gen.absolute_max_string_len], dtype='float32')
 	input_length = Input(name='input_length', shape=[1], dtype='int64')
@@ -533,7 +485,7 @@ def train(run_name, start_epoch, stop_epoch, img_w):
 						callbacks=[viz_cb, img_gen], initial_epoch=start_epoch)
 
 if __name__ == '__main__':
-    run_name = './'
-    train(run_name, 0, 6, 128)
-    train(run_name, 6, 20, 256)
-    train(run_name, 20, 25, 512)
+	run_name = './'
+	train(run_name, 0, 6, 128)
+	train(run_name, 6, 20, 256)
+	train(run_name, 20, 25, 512)
