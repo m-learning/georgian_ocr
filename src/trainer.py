@@ -195,17 +195,16 @@ class TextImageGenerator(keras.callbacks.Callback):
 					tmp_string_list.append(word)
 
 		# bigram file contains common word pairings in english speech
-		if self.bigram_file:
-			with open(self.bigram_file, 'rt') as f:
-				lines = f.readlines()
-				for line in lines:
-					if len(tmp_string_list) == self.num_words:
-						break
-					columns = line.lower().split()
-					word = columns[0] + ' ' + columns[1]
-					if is_valid_str(word) and \
-							(max_string_len == -1 or max_string_len is None or len(word) <= max_string_len):
-						tmp_string_list.append(word)
+		with open(self.bigram_file, 'rt') as f:
+			lines = f.readlines()
+			for line in lines:
+				if len(tmp_string_list) == self.num_words:
+					break
+				columns = line.lower().split()
+				word = columns[0] + ' ' + columns[1]
+				if is_valid_str(word) and \
+						(max_string_len == -1 or max_string_len is None or len(word) <= max_string_len):
+					tmp_string_list.append(word)
 		if len(tmp_string_list) != self.num_words:
 			raise IOError('Could not pull enough words from supplied monogram and bigram files. ')
 		# interlace to mix up the easy and hard words
