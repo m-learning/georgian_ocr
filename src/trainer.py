@@ -409,7 +409,7 @@ def train(run_name, start_epoch, stop_epoch, img_w):
 	#								origin='http://www.isosemi.com/datasets/wordlists.tgz', untar=True))
 
 	img_gen = TextImageGenerator(monogram_file='data/words',
-								 bigram_file=None,  # 'data/bigrams',
+								 bigram_file= 'data/bigrams',
 								 minibatch_size=32,
 								 img_w=img_w,
 								 img_h=img_h,
