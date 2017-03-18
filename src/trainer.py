@@ -195,17 +195,16 @@ class TextImageGenerator(keras.callbacks.Callback):
 					tmp_string_list.append(word)
 
 		# bigram file contains common word pairings in english speech
-		if self.bigram_file:
-			with open(self.bigram_file, 'rt') as f:
-				lines = f.readlines()
-				for line in lines:
-					if len(tmp_string_list) == self.num_words:
-						break
-					columns = line.lower().split()
-					word = columns[0] + ' ' + columns[1]
-					if is_valid_str(word) and \
-							(max_string_len == -1 or max_string_len is None or len(word) <= max_string_len):
-						tmp_string_list.append(word)
+		with open(self.bigram_file, 'rt') as f:
+			lines = f.readlines()
+			for line in lines:
+				if len(tmp_string_list) == self.num_words:
+					break
+				columns = line.lower().split()
+				word = columns[0] + ' ' + columns[1]
+				if is_valid_str(word) and \
+						(max_string_len == -1 or max_string_len is None or len(word) <= max_string_len):
+					tmp_string_list.append(word)
 		if len(tmp_string_list) != self.num_words:
 			raise IOError('Could not pull enough words from supplied monogram and bigram files. ')
 		# interlace to mix up the easy and hard words
@@ -409,7 +408,7 @@ def train(run_name, start_epoch, stop_epoch, img_w):
 	#								origin='http://www.isosemi.com/datasets/wordlists.tgz', untar=True))
 
 	img_gen = TextImageGenerator(monogram_file='data/words',
-								 bigram_file=None,  # 'data/bigrams',
+								 bigram_file= 'data/bigrams',
 								 minibatch_size=32,
 								 img_w=img_w,
 								 img_h=img_h,
@@ -480,6 +479,6 @@ def train(run_name, start_epoch, stop_epoch, img_w):
 
 if __name__ == '__main__':
 	run_name = './'
-	train(run_name, 0, 6, 128)
+	train(run_name, 0, 6, 160)
 	train(run_name, 6, 20, 256)
 	train(run_name, 20, 25, 512)
